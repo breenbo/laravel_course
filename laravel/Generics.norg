@@ -1,0 +1,48 @@
+@document.meta
+title: Generics
+description: 
+authors: admin
+categories: 
+created: 2023-08-13
+updated: 2023-08-13
+version: 1.1.1
+@end
+
+
+* Routes
+
+  In the *routes/web.php file*
+
+** slugs
+
+   Slug is a string for getting row from the database.
+   slug column must be filled in the database and must be unique (works like an uuid).
+
+** Route binding model
+
+   It's possible to bind a model to a route, if the names are the same along the route.
+   Here the name of the variable in the function is the same as the name of the variable in the url, Laravel pass the object 'post' to the view:
+
+   @code php
+   <?php
+
+
+   Route::get('/posts/{post:slug}', function ($post) { // Post::where('slug', $post)->first();
+       return view('post', [
+           'post' => $post
+       ])
+
+   });
+  @end
+
+
+
+
+
+
+
+
+
+* Models
+
+  In *app/Models file*.

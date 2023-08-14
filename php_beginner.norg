@@ -1,0 +1,181 @@
+
+* Methods
+  1. add the new route in the router.php file
+
+  @code php
+    $router -> get('/register', 'controllers/registration/create.php');
+  @end
+
+  2. create the required controller
+
+  @code php
+    view('registration/create.view.php');
+  @end
+
+  3. create the required view
+
+
+
+* CRUD
+  Rest conventions for controllers:
+  - index: show all notes
+  - show: show a specific note
+  - create: create a note (from controller)
+  - store: store the note in the db
+  - edit: edit a note (form controller)
+  - update: update a note in the db
+  - destroy: delete a note
+
+
+
+* Session
+** Sesssion
+  *Session* must be activated in the application. Data are stored in a file in the server side, and a cookie with the session id is stored on the browser side.
+
+  In index.php: 
+  @code php
+
+  session_start();
+
+  @end
+
+** Middleware
+   *Middleware*: bridge between router to the core of the application => can embeed logic to allow access to particular route depending on user criteria
+
+
+
+
+* PHP Basics
+
+** Associative arrays
+   Like object in javascript
+
+   @code php
+   <body>
+       <?php
+           $books = [
+               [
+                   'name' => 'Do Androids Dream of Electric Sheep',
+                   'author' => 'Philip K. Dick',
+                   'purchaseUrl' => 'http://example.com'
+               ],
+               [
+                   'name' => 'Project Hail Mary',
+                   'author' => 'Andy Weir',
+                   'purchaseUrl' => 'http://example.com'
+               ]
+           ];
+       ?>
+
+       <ul>
+         <!-- !order inversed, not same as js -->
+           <?php foreach ($books as $book) : ?>
+               <li>
+                   <a href="<?= $book['purchaseUrl'] ?>">
+                       <?= $book['name'] ?>
+                   </a>
+               </li>
+           <?php endforeach; ?>
+       </ul>
+   </body>
+   @end
+
+
+** Functions
+
+   @code php
+   <body>
+       <?php
+           $books = [
+               [
+                   'name' => 'Do Androids Dream of Electric Sheep',
+                   'author' => 'Philip K. Dick',
+                   'releaseYear' => 1968,
+                   'purchaseUrl' => 'http://example.com'
+               ],
+               [
+                   'name' => 'Project Hail Mary',
+                   'author' => 'Andy Weir',
+                   'releaseYear' => 2021,
+                   'purchaseUrl' => 'http://example.com'
+               ],
+               [
+                   'name' => 'The Martian',
+                   'author' => 'Andy Weir',
+                   'releaseYear' => 2011,
+                   'purchaseUrl' => 'http://example.com'
+               ],
+           ];
+
+      // named function
+           function filterByAuthor($books, $author)
+           {
+               $filteredBooks = [];
+
+               foreach ($books as $book) {
+                   if ($book['author'] === $author) {
+                     // add the book to the filtered array
+                       $filteredBooks[] = $book;
+                   }
+               }
+
+               return $filteredBooks;
+           }
+       ?>
+
+       <ul>
+           <?php foreach (filterByAuthor($books, 'Philip K. Dick') as $book) : ?>
+               <li>
+                   <a href="<?= $book['purchaseUrl'] ?>">
+                       <?= $book['name']; ?> (<?= $book['releaseYear'] ?>) - By <?= $book['author'] ?>
+                   </a>
+               </li>
+           <?php endforeach; ?>
+       </ul>
+   </body>
+   @end
+
+
+** Lambda functions
+
+   @code php
+   <body>
+       <?php
+           $books = [
+               [
+                   'name' => 'Do Androids Dream of Electric Sheep',
+                   'author' => 'Philip K. Dick',
+                   'releaseYear' => 1968,
+                   'purchaseUrl' => 'http://example.com'
+               ],
+               [
+                   'name' => 'Project Hail Mary',
+                   'author' => 'Andy Weir',
+                   'releaseYear' => 2021,
+                   'purchaseUrl' => 'http://example.com'
+               ],
+               [
+                   'name' => 'The Martian',
+                   'author' => 'Andy Weir',
+                   'releaseYear' => 2011,
+                   'purchaseUrl' => 'http://example.com'
+               ],
+           ];
+
+
+               $filteredBooks = array_filter($books, function ($book) {
+                  return $book['author'] === 'Philip K. Dick';
+               });
+       ?>
+
+       <ul>
+         <?php foreach ($filteredBooks as $book) : ?>
+               <li>
+                   <a heef="<?= $book['purchaseUrl'] ?>">
+                       <?= $book['name']; ?> (<?= $book['releaseYear'] ?>) - By <?= $book['author'] ?>
+                   </a>
+               </li>
+           <?php endforeach; ?>
+       </ul>
+   </body>
+   @end

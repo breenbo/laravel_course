@@ -1,0 +1,336 @@
+@document.meta
+title: Eloquent
+description: 
+authors: admin
+categories: 
+created: 2023-08-13
+updated: 2023-08-13
+version: 1.1.1
+@end
+
+
+* Create database
+
+** Create a database from laravel
+
+   Use artisan to create a database from the blueprints in the *database/migrations/* directory: 
+
+  @code bash
+      php artisan migrate 
+  @end
+
+
+
+** Recreate a database
+
+   Drop all tables and create new ones
+
+   !!! NEVER DO IN PRODUCTION !!!
+
+  @code bash
+      php artisan migrate:fresh
+  @end
+
+
+
+** Create a new migration for a new database
+
+   Create the migration file in *database/migrations/*, then change it:
+
+  @code bash
+  php artisan make:migration create_posts_table
+  @end
+
+   Then create the db with *php artisan migrate*.
+
+
+
+* Model
+
+** Create a new model
+
+  Create a new model (code that describe what we want to have as data model) with:
+
+  @code bash
+  php artisan make:model Post
+  @end
+
+  The new model is in *app/Models/Post.php* file.
+
+
+** Protect mass assignment
+
+   In the model file, add :
+
+  @code php
+  <?php 
+
+  class Post extends Model 
+  {
+  protected $fillabels = ['title', 'content']; // explicit what can be changed
+
+  OR
+
+  protected $guarded = []; // explicit what can't be changed
+
+  }
+
+  @end
+
+
+
+* Relationships
+
+  Create a relationship between Post model and a Category model:
+
+*** create a new Category model, *with migration*
+
+  @code bash
+  php artisan make:model Category -m
+  @end
+
+    Change the *Category migration file* as wanted.
+    @code php
+    <?php
+
+    Schema::create('categories', function (Blueprint $table) {
+        //...
+        $table->string('name');
+        //...
+    })
+    @end
+
+
+*** Change the *Post migration file* to accept a foreign id
+
+    Create a foreign id to refer to the category id
+
+    @code php
+    <?php
+
+    Schema::create('post', function (Blueprint $table) {
+        //...
+        $table->foreignId('category_id');
+        //...
+    })
+    @end
+
+
+*** Create relationships between Post model and Category model
+
+    Make settings in the *Post/Category model file*:
+
+
+    - Post file, can *belong to a category*:
+
+    @code php
+    <?php
+
+    class Post extends Model
+    {
+        public function category()
+        {
+            return $this->belongsTo(Category::class);
+        }
+    }
+    
+    @end
+
+    Access the category of a post with *post -> category*, or post -> category -> name.
+
+
+
+    - Category file, *can have many post* :
+
+    @code php
+    <?php
+
+    class Category extends Model
+    {
+        public function posts()
+        {
+            return $this->hasMany(Post::class);
+        }
+    }
+    
+    @end
+
+    Access the post of a category with *category -> posts*.
+
+
+*** Get the posts without performance issues (to many request)
+
+**** Set per request
+
+    Avoid performance issue when *accessing a relationship inside a loop* (too many requests).
+
+    @code php
+    <?php
+
+       //
+       // get the posts with the category, without to much requests -> fix performance issue
+        // unless it will dot one request for each post/category (access a relationship in a loop)
+        // add some sorting as bonus
+       //
+       Route::get('/', function () {
+           return view('posts', [
+            'posts' => Post::with('category')->latest()->get()
+           ])
+       })
+    @end
+
+
+
+**** Set globally
+
+    Can be set in Model too, for every post request:
+
+    @code php
+    <?php
+
+    class Post extends Model
+    {
+        protected $with = ["category", "author"]
+    }
+    
+    @end
+
+     *In this case, no need to add with in the route*
+
+
+  
+
+* Seed and factory
+
+** Seed
+
+   Run *php artisan db:seed* to populate the db. Blueprint files in *database/seeders/* directory.:
+
+
+*** Static seed
+
+    User can add "static" seed in the seeder file, on every run there will be a new user but the same category and post.
+
+    @code php
+    <?php
+
+    public function run()
+    {
+        // remove all old datas
+        User::truncate();
+        Post::truncate();
+        Category::truncate();
+
+        // create dynamic user
+        $user = User::factory()->create(); // because factory exists for users
+
+        // create statics seeders
+        $personal = Category::create([
+            'name' => 'Personal',
+            'slug' => 'personal',
+        ])
+
+        // create a post *with link to previous datas*
+        Post::create([
+            'title' => 'My first post',
+            'content' => 'This is my first post',
+            'category_id' => $personal->id,
+            'user_id' => $user->id,
+        ]);
+            
+    }
+    
+    @end
+
+
+** Factory
+
+*** Fully dynamic seed
+
+    Factory and model to seed need to be linked. Factories use *faker* tool to create data.
+
+**** Create a new Factory
+     Use *php artisan make:factory PostFactory* to create a new factory for posts. File will be in *database/factories/*
+
+
+**** Adapt the new factory to your need
+
+     @code php
+     <?php
+
+     public function definition()
+     {
+         return [
+             // generic data
+             'title' => $this->faker->sentence,
+             'excerpt' => $this->faker->sentence,
+             // ...
+             //
+             // linked data: use factories to create linked user/category
+             //
+             'user_id' => User::factory(),
+             'category_id' => Category::factory(),
+         ]
+     }
+
+     @end
+
+
+*** Check relationship in tinker
+
+    Get the user and the category of a post
+
+    @code php
+    posts = Post::with('category', 'user')->get();
+    
+    @end
+
+
+*** Put a constraint in the factory
+
+    In the seeder file, put a constrain to the user to be created, and refer to this user in the post seed:
+
+    @code php
+    <?php
+
+    public function run()
+    {
+        // remove all old datas
+        // create dynamic user
+        $user = User::factory()->create([
+            'name' => 'John Doe',
+        ]); // because factory exists for users
+
+        Post::factory(5)->create([
+            'user_id' => $user->id
+        ])
+            
+    }
+    
+    @end
+
+
+*** Migrate and seed
+    @code bash
+        php artisan migrate:fresh --seed
+    @end
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

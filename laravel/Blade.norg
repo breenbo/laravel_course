@@ -1,0 +1,120 @@
+@document.meta
+title: Blade
+description: 
+authors: admin
+categories: 
+created: 2023-08-13
+updated: 2023-08-13
+version: 1.1.1
+@end
+
+
+
+* Components and layouts
+
+  In *resources/views* directory.
+
+  Content of the components will be injected in the layout file by Laravel
+
+
+
+** Layout file - method 1 - @yield
+
+   Create a layout.blade.php file, with any sections you want :
+
+   @code php
+   <!doctype html>
+
+   <title>MY blog</title>
+
+   <body>
+
+      @yield('banner')
+      @yield('content')
+
+   </body>
+
+   @end
+
+
+   In every view related to the layout (post.blade.php), use the layout  :
+
+   @code php
+   @extends('layout')
+
+   @section('content')
+       
+   <!-- view content here -->
+   
+   @endsection
+
+   @end
+
+
+
+** Layout file - method 2 - components directory
+
+   Create a *resources/views/components* directory and put any file in it, will be take as layout :
+
+*** Default slot
+
+   @code php
+
+    <!doctype html>
+
+    <title>MY blog</title>
+
+    <body>
+        {{ $slot }}
+    </body>
+
+   @end
+
+   In every view related to the layout (post.blade.php), use the layout: 
+
+   @code php
+
+    <x-layout>
+        <!-- content here -->
+    </x-layout>
+
+   @end
+
+
+
+*** Named slot
+
+   @code php
+
+    <!doctype html>
+
+    <title>MY blog</title>
+
+    <body>
+        {{ $content }}
+    </body>
+
+   @end
+
+   In every view related to the layout (post.blade.php), use the layout: 
+
+   @code php
+
+    <x-layout>
+        <x-slot name="content">
+            <!-- content here -->
+        </x-slot>
+    </x-layout>
+
+
+   @end
+
+
+
+
+
+
+
+
+
+
